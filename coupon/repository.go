@@ -15,11 +15,13 @@ var (
 // For simplicity I have initialized it with 100 cap
 type repository struct {
 	coupons []Coupon
+	deleted map[int]struct{} // set of deleted IDs
 }
 
 func NewRepository() *repository {
 	return &repository{
 		coupons: make([]Coupon, 0, 100),
+		deleted: make(map[int]struct{}, 100),
 	}
 }
 
@@ -29,7 +31,13 @@ func (r *repository) CreateCoupon(coupon Coupon) error {
 }
 
 func (r *repository) GetAllCoupons() ([]Coupon, error) {
-	return r.coupons, nil
+	result := make([]Coupon, 0, len(r.coupons))
+	for id, c := range r.coupons {
+		if _, isDeleted := r.deleted[id]; !isDeleted {
+			result = append(result, c)
+		}
+	}
+	return result, nil
 }
 
 // GetCouponByID will return the coupon at that index
@@ -39,6 +47,9 @@ func (r *repository) GetCouponByID(id int) (Coupon, error) {
 	if id >= len(r.coupons) {
 		return Coupon{}, fmt.Errorf("%w: no coupon with id %d", errDoesNotExist, id)
 	}
+	if _, isDeleted := r.deleted[id]; isDeleted {
+		return Coupon{}, fmt.Errorf("%w: no coupon with id %d", errDoesNotExist, id)
+	}
 	return r.coupons[id], nil
 }
 
@@ -46,6 +57,20 @@ func (r *repository) UpdateCouponByID(id int, newCoupon Coupon) (Coupon, error) 
 	if id >= len(r.coupons) {
 		return Coupon{}, fmt.Errorf("%w: no coupon with id %d", errDoesNotExist, id)
 	}
+	if _, isDeleted := r.deleted[id]; isDeleted {
+		return Coupon{}, fmt.Errorf("%w: no coupon with id %d", errDoesNotExist, id)
+	}
 	r.coupons[id] = newCoupon
 	return newCoupon, nil
+}
+
+func (r *repository) DeleteCouponByID(id int) error {
+	if id >= len(r.coupons) {
+		return fmt.Errorf("%w: no coupon with id %d", errDoesNotExist, id)
+	}
+	if _, isDeleted := r.deleted[id]; isDeleted {
+		return fmt.Errorf("%w: no coupon with id %d", errDoesNotExist, id)
+	}
+	r.deleted[id] = struct{}{}
+	return nil
 }

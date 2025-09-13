@@ -15,6 +15,7 @@ type Repository interface {
 	GetAllCoupons() ([]Coupon, error)
 	GetCouponByID(id int) (Coupon, error)
 	UpdateCouponByID(id int, newCoupon Coupon) (Coupon, error)
+	DeleteCouponByID(id int) error
 }
 
 type Handler struct {
@@ -99,9 +100,29 @@ func (h Handler) UpdateByID(c echo.Context) error {
 		Details: req.Details,
 	})
 	if err != nil {
-		slog.Error("update coupon db error", slog.Any("err", err))
-		return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
+		slog.Error("update coupon by id db", slog.Any("err", err), slog.Int("id", id))
+		if errors.Is(err, errDoesNotExist) {
+			return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
+		}
+		return c.JSON(http.StatusInternalServerError, utils.GenericFailure(err))
 	}
 
 	return c.JSON(http.StatusOK, utils.GenericSuccess(updated))
+}
+
+func (h Handler) DeleteByID(c echo.Context) error {
+	id, err := paramIDHelper(c)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
+	}
+	err = h.Repo.DeleteCouponByID(id)
+
+	if err != nil {
+		slog.Error("delete coupon by id db", slog.Any("err", err), slog.Int("id", id))
+		if errors.Is(err, errDoesNotExist) {
+			return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
+		}
+		return c.JSON(http.StatusInternalServerError, utils.GenericFailure(err))
+	}
+	return c.JSON(http.StatusNoContent, utils.GenericSuccess("deleted"))
 }
