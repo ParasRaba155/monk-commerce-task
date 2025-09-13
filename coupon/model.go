@@ -108,5 +108,5 @@ type CouponProduct struct {
 
 type Coupon struct {
 	Type    CouponType
-	Details CouponType
+	Details CouponDetails
 }

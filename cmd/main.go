@@ -19,7 +19,10 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	e.POST("/coupons", coupon.Create)
+	repo := coupon.NewRepository()
+	couponHandler := coupon.NewHandler(repo)
+
+	e.POST("/coupons", couponHandler.Create)
 
 	// Start server
 	if err := e.Start(":8080"); err != nil && !errors.Is(err, http.ErrServerClosed) {

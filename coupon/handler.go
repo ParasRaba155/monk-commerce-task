@@ -20,15 +20,27 @@ type Handler struct {
 	Repo Repository
 }
 
-func Create(c echo.Context) error {
+func NewHandler(repo Repository) Handler {
+	return Handler{
+		Repo: repo,
+	}
+}
+
+func (h Handler) Create(c echo.Context) error {
 	var req CreateCouponReq
 	if err := c.Bind(&req); err != nil {
 		slog.Error("create coupon bind error", slog.Any("err", err))
 		return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
 	}
+
 	if err := req.Validate(); err != nil {
 		slog.Error("create coupon validate error", slog.Any("err", err))
 		return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
 	}
+
+	h.Repo.CreateCoupon(Coupon{
+		Type:    CouponType(req.Type),
+		Details: req.Details,
+	})
 	return c.JSON(http.StatusCreated, utils.GenericSuccess("coupon created"))
 }
