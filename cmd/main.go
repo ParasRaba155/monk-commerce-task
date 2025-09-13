@@ -23,6 +23,8 @@ func main() {
 	couponHandler := coupon.NewHandler(repo)
 
 	e.POST("/coupons", couponHandler.Create)
+	e.GET("/coupons", couponHandler.Get)
+	e.GET("/coupons/:id", couponHandler.GetByID)
 
 	// Start server
 	if err := e.Start(":8080"); err != nil && !errors.Is(err, http.ErrServerClosed) {
