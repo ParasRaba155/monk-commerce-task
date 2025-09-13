@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 
@@ -15,6 +14,7 @@ type Repository interface {
 	CreateCoupon(coupon Coupon) error
 	GetAllCoupons() ([]Coupon, error)
 	GetCouponByID(id int) (Coupon, error)
+	UpdateCouponByID(id int, newCoupon Coupon) (Coupon, error)
 }
 
 type Handler struct {
@@ -58,25 +58,50 @@ func (h Handler) Get(c echo.Context) error {
 }
 
 func (h Handler) GetByID(c echo.Context) error {
-	idstr := c.Param("id")
-	if !utils.IsNonNegativeAlphaNumeric(idstr) {
-		slog.Error("get coupon by id validation", slog.String("err", "id must be non negative number"), slog.String("idstr", idstr))
-		return c.JSON(http.StatusBadRequest, utils.GenericFailure("id must be non negative number"))
+	id, err := paramIDHelper(c)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
 	}
 
-	id, err := strconv.ParseInt(idstr, 10, 64)
+	coupon, err := h.Repo.GetCouponByID(id)
 	if err != nil {
-		slog.Error("get coupon by id parsing", slog.Any("err", err), slog.String("idstr", idstr))
-		return c.JSON(http.StatusInternalServerError, utils.GenericFailure(err))
-	}
-
-	coupon, err := h.Repo.GetCouponByID(int(id))
-	if err != nil {
-		slog.Error("get coupon by id db", slog.Any("err", err), slog.Int64("id", id))
+		slog.Error("get coupon by id db", slog.Any("err", err), slog.Int("id", id))
 		if errors.Is(err, errDoesNotExist) {
 			return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
 		}
 		return c.JSON(http.StatusInternalServerError, utils.GenericFailure(err))
 	}
 	return c.JSON(http.StatusOK, utils.GenericSuccess(coupon))
+}
+
+func (h Handler) UpdateByID(c echo.Context) error {
+	id, err := paramIDHelper(c)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
+	}
+
+	// ideally we might have different request body for update and create
+	// but for simplicity we will have the same request body and update it as a whole
+	// after validation
+	var req CreateCouponReq
+	if err := c.Bind(&req); err != nil {
+		slog.Error("update coupon bind error", slog.Any("err", err))
+		return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
+	}
+
+	if err := req.Validate(); err != nil {
+		slog.Error("update coupon validate error", slog.Any("err", err))
+		return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
+	}
+
+	updated, err := h.Repo.UpdateCouponByID(id, Coupon{
+		Type:    CouponType(req.Type),
+		Details: req.Details,
+	})
+	if err != nil {
+		slog.Error("update coupon db error", slog.Any("err", err))
+		return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
+	}
+
+	return c.JSON(http.StatusOK, utils.GenericSuccess(updated))
 }

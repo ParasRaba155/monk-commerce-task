@@ -41,3 +41,11 @@ func (r *repository) GetCouponByID(id int) (Coupon, error) {
 	}
 	return r.coupons[id], nil
 }
+
+func (r *repository) UpdateCouponByID(id int, newCoupon Coupon) (Coupon, error) {
+	if id >= len(r.coupons) {
+		return Coupon{}, fmt.Errorf("%w: no coupon with id %d", errDoesNotExist, id)
+	}
+	r.coupons[id] = newCoupon
+	return newCoupon, nil
+}
