@@ -1,6 +1,10 @@
 // Package utils for any additional utilities
 package utils
 
+import "regexp"
+
+var isAlphaNumericRegex = regexp.MustCompile(`^\d+$`)
+
 type genericResponse struct {
 	Success bool           `json:"success"`
 	Data    any            `json:"data,omitempty"`
@@ -26,8 +30,14 @@ func GenericFailure(err any) genericResponse {
 			Error:   m,
 		}
 	}
+	m["message"] = err
 	return genericResponse{
 		Success: false,
 		Error:   m,
 	}
+}
+
+// IsNonNegativeAlphaNumeric validates against the regex `^[\d+]$`
+func IsNonNegativeAlphaNumeric(str string) bool {
+	return isAlphaNumericRegex.MatchString(str)
 }
