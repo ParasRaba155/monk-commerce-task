@@ -26,6 +26,7 @@ func main() {
 	e.GET("/coupons", couponHandler.Get)
 	e.GET("/coupons/:id", couponHandler.GetByID)
 	e.PUT("/coupons/:id", couponHandler.UpdateByID)
+	e.DELETE("/coupons/:id", couponHandler.DeleteByID)
 
 	// Start server
 	if err := e.Start(":8080"); err != nil && !errors.Is(err, http.ErrServerClosed) {
