@@ -44,4 +44,12 @@ NOTE: Run `go mod tidy` if you are going to run it using the 3rd method
 ### Additional Cases
 
 - We can have upto limit in the CartWise and ProductWise coupons, as currently they are flat discounts. We can add a max cap on it. Aptly named Cart Wise Upto and Product Wise Upto Coupon
-- We can add a product category and have a coupon with discount on product category. This too can have a up-to variant. Let's name them Product Category Wise and Product Category Wise upto coupons
+- We can add a product category and have a coupon with discount on product category. This too can have a up-to variant. Let's name them Product Category Wise and Product Category Wise upto coupons, e.g. 10% discount on all the clothing items
+- We can have the brand wise discount, e.g. 10% off on all the Dell Purchases
+- We can have discount based on quantity, e.g. Buy more than 10 items of clothing then you get 10% off
+- We can have first time customer discount for the customer's 1st visit, this could be any coupon cart wise, or bxgy or product wise
+
+### Limitations
+
+- To implement seasonal coupons we will require to have active date and expiration date, current implementation does not tackle it
+- We can roll out a very simple form of product category and brand wise discount, with adding brand and category field in our product list, however it would be very simple implementation as the real world brand wise discounts are more specific then just a flat x% discount.
