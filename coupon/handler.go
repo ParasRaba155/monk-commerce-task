@@ -59,7 +59,7 @@ func (h Handler) Get(c echo.Context) error {
 }
 
 func (h Handler) GetByID(c echo.Context) error {
-	id, err := paramIDHelper(c)
+	id, err := utils.ParamIDHelper(c)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
 	}
@@ -76,7 +76,7 @@ func (h Handler) GetByID(c echo.Context) error {
 }
 
 func (h Handler) UpdateByID(c echo.Context) error {
-	id, err := paramIDHelper(c)
+	id, err := utils.ParamIDHelper(c)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
 	}
@@ -111,7 +111,7 @@ func (h Handler) UpdateByID(c echo.Context) error {
 }
 
 func (h Handler) DeleteByID(c echo.Context) error {
-	id, err := paramIDHelper(c)
+	id, err := utils.ParamIDHelper(c)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
 	}
@@ -124,5 +124,5 @@ func (h Handler) DeleteByID(c echo.Context) error {
 		}
 		return c.JSON(http.StatusInternalServerError, utils.GenericFailure(err))
 	}
-	return c.JSON(http.StatusNoContent, utils.GenericSuccess("deleted"))
+	return c.JSON(http.StatusNoContent, nil)
 }

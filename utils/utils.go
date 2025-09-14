@@ -49,6 +49,8 @@ func IsNonNegativeAlphaNumeric(str string) bool {
 	return isAlphaNumericRegex.MatchString(str)
 }
 
+// ParamIDHelper will check the param id, and make sure that it's a non-negative
+// alphanumeric
 func ParamIDHelper(c echo.Context) (int, error) {
 	idstr := c.Param("id")
 	if !IsNonNegativeAlphaNumeric(idstr) {

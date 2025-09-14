@@ -10,6 +10,7 @@ type CreateCouponReq struct {
 	Details CouponDetails `json:"details"`
 }
 
+// UnmarshalJSON for custom unmarshal for handling coupondetails
 func (r *CreateCouponReq) UnmarshalJSON(data []byte) error {
 	var raw struct {
 		Type    CouponType      `json:"type"`
@@ -55,6 +56,7 @@ func (r *CreateCouponReq) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// Validate non empty and validate each detail
 func (r CreateCouponReq) Validate() error {
 	if r.Type == "" {
 		return fmt.Errorf("type is required field")

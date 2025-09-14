@@ -162,7 +162,7 @@ func TestApplyProductWiseCoupon(t *testing.T) {
 		expectedCart DiscountedCart
 	}{
 		{
-			name: "Scenario: 20% off on a product",
+			name: "20% off on a product",
 			items: []PricedItem{
 				{ProductID: productAID, Quantity: 1, Price: 100},
 				{ProductID: productBID, Quantity: 1, Price: 50},
@@ -182,7 +182,7 @@ func TestApplyProductWiseCoupon(t *testing.T) {
 			},
 		},
 		{
-			name: "Scenario: No matching product in cart",
+			name: "No matching product in cart",
 			items: []PricedItem{
 				{ProductID: productBID, Quantity: 1, Price: 50},
 				{ProductID: productCID, Quantity: 1, Price: 75},
@@ -212,7 +212,7 @@ func TestApplyProductWiseCoupon(t *testing.T) {
 			}
 			gotCart := applyProductWiseCoupon(tc.items, tc.totalPrice, coup)
 			if !reflect.DeepEqual(gotCart, tc.expectedCart) {
-				t.Errorf("applyProductWiseCoupon() = %v, want %v", gotCart, tc.expectedCart)
+				t.Errorf("applyProductWiseCoupon() = %+v, want %+v", gotCart, tc.expectedCart)
 			}
 		})
 	}

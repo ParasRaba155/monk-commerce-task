@@ -2,6 +2,7 @@ package cart
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/ParasRaba155/monk-commerce-task/coupon"
 )
@@ -18,9 +19,6 @@ func GetAppliableCoupons(items []PricedItem, coupons []coupon.Coupon) []Discount
 
 	result := make([]DiscountCoupon, 0, len(coupons))
 
-	// TODO: Create actual couponID in the coupon and modify the coupon repository
-	// code accordingly, the current code can't handle the delete, as deleted entries will result
-	// in old coupon ids if we rely on the index only
 	for couponID, coupon := range coupons {
 		switch coupon.Type {
 		case "cart-wise":
@@ -54,6 +52,7 @@ func GetAppliableCoupons(items []PricedItem, coupons []coupon.Coupon) []Discount
 	return result
 }
 
+// appliableCartWiseCoupons for handling the cart wise coupon
 func appliableCartWiseCoupons(totalPrice int, coup coupon.Coupon) (int, bool) {
 	detail := coup.Details.(coupon.CartWiseDetails)
 	if detail.Threshold > totalPrice {
@@ -62,16 +61,20 @@ func appliableCartWiseCoupons(totalPrice int, coup coupon.Coupon) (int, bool) {
 	return (detail.Discount * totalPrice) / 100, true
 }
 
+// appliableProductWiseCoupon for handling the product wise coupon
 func appliableProductWiseCoupon(items []PricedItem, coup coupon.Coupon) (int, bool) {
 	detail := coup.Details.(coupon.ProductWiseDetails)
-	for _, item := range items {
-		if item.ProductID == detail.ProductID {
-			return (detail.Discount * item.Price * item.Quantity) / 100, true
-		}
+	itemIdx := slices.IndexFunc(items, func(item PricedItem) bool {
+		return item.ProductID == detail.ProductID
+	})
+	if itemIdx == -1 {
+		return 0, false
 	}
-	return 0, false
+	item := items[itemIdx]
+	return (detail.Discount * item.Price * item.Quantity) / 100, true
 }
 
+// appliableBxGYCoupon for handling the bxgy coupon
 func appliableBxGYCoupon(items []PricedItem, coup coupon.Coupon) (int, map[int]int, bool) {
 	detail := coup.Details.(coupon.BxGyDetails)
 
@@ -80,18 +83,17 @@ func appliableBxGYCoupon(items []PricedItem, coup coupon.Coupon) (int, map[int]i
 		cartMap[product.ProductID] = product
 	}
 
+	// we work on the assumption that each buy item has equal quantity
+	// i.e. each item in the buy product will have same quantity
 	totalBuyRequired := detail.BuyProducts[0].Quantity
 	totalBuyInCart := 0
 	for _, product := range detail.BuyProducts {
+		// every product of the buy array should be in our cart for discount to be applicable
 		productInCart, ok := cartMap[product.ProductID]
 		if !ok {
 			return 0, nil, false
 		}
 		totalBuyInCart += productInCart.Quantity
-	}
-
-	if totalBuyRequired == 0 {
-		return 0, nil, false
 	}
 
 	actualRepetitions := min(totalBuyInCart/totalBuyRequired, detail.RepetitionLimit)
@@ -101,18 +103,18 @@ func appliableBxGYCoupon(items []PricedItem, coup coupon.Coupon) (int, map[int]i
 
 	totalDiscount := 0
 	productDiscounts := map[int]int{}
-	for _, product := range detail.GetProducts {
-		productInCart, ok := cartMap[product.ProductID]
+	for _, getProduct := range detail.GetProducts {
+		productInCart, ok := cartMap[getProduct.ProductID]
 		if !ok {
 			continue
 		}
 		// how many times can this item by multiplied, say
 		// we only have 1 item in the cart but repetation is 3 then we should only allow 1
-		maxTimesByCart := productInCart.Quantity / product.Quantity
+		maxTimesByCart := productInCart.Quantity / getProduct.Quantity
 		times := min(actualRepetitions, maxTimesByCart)
 
-		discount := product.Quantity * productInCart.Price * times
-		productDiscounts[product.ProductID] = discount
+		discount := getProduct.Quantity * productInCart.Price * times
+		productDiscounts[getProduct.ProductID] = discount
 		totalDiscount += discount
 	}
 	if totalDiscount == 0 {
@@ -122,6 +124,8 @@ func appliableBxGYCoupon(items []PricedItem, coup coupon.Coupon) (int, map[int]i
 	return totalDiscount, productDiscounts, true
 }
 
+// ApplyCoupon will apply the given coupon to the cart and return the discounted cart
+// It will panic if the coupon is invalid
 func ApplyCoupon(items []PricedItem, coupon coupon.Coupon) DiscountedCart {
 	totalPrice := 0
 	for _, item := range items {
@@ -166,7 +170,7 @@ func applyCartWiseCoupon(items []PricedItem, totalPrice int, coupon coupon.Coupo
 }
 
 // applyProductWiseCoupon will return the cart list with discount against the product
-// along with the total discount
+// along with the total discount and remaining products having zero discount
 func applyProductWiseCoupon(items []PricedItem, totalPrice int, coup coupon.Coupon) DiscountedCart {
 	discountedItems := make([]DiscountedItem, len(items))
 	detail := coup.Details.(coupon.ProductWiseDetails)
@@ -201,6 +205,8 @@ func applyBxGyWiseCoupon(items []PricedItem, totalPrice int, coup coupon.Coupon)
 		discount = 0
 	}
 
+	// discount map has the associated discount against the get item
+	// and default of zero for other items
 	for i, item := range items {
 		discount := productDiscounts[item.ProductID]
 		discountedItems[i] = item.ToDiscountedItem(discount)

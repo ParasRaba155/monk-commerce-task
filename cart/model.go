@@ -71,6 +71,7 @@ type DiscountedCart struct {
 	FinalPrice    int              `json:"final_price"`
 }
 
+// Validate will check for >= 1 quantity
 func (c Cart) Validate() error {
 	for _, item := range c.Items {
 		if item.Quantity < 1 {
