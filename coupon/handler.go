@@ -67,7 +67,7 @@ func (h Handler) GetByID(c echo.Context) error {
 	coupon, err := h.Repo.GetCouponByID(id)
 	if err != nil {
 		slog.Error("get coupon by id db", slog.Any("err", err), slog.Int("id", id))
-		if errors.Is(err, errDoesNotExist) {
+		if errors.Is(err, ErrDoesNotExist) {
 			return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
 		}
 		return c.JSON(http.StatusInternalServerError, utils.GenericFailure(err))
@@ -101,7 +101,7 @@ func (h Handler) UpdateByID(c echo.Context) error {
 	})
 	if err != nil {
 		slog.Error("update coupon by id db", slog.Any("err", err), slog.Int("id", id))
-		if errors.Is(err, errDoesNotExist) {
+		if errors.Is(err, ErrDoesNotExist) {
 			return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
 		}
 		return c.JSON(http.StatusInternalServerError, utils.GenericFailure(err))
@@ -119,7 +119,7 @@ func (h Handler) DeleteByID(c echo.Context) error {
 
 	if err != nil {
 		slog.Error("delete coupon by id db", slog.Any("err", err), slog.Int("id", id))
-		if errors.Is(err, errDoesNotExist) {
+		if errors.Is(err, ErrDoesNotExist) {
 			return c.JSON(http.StatusBadRequest, utils.GenericFailure(err))
 		}
 		return c.JSON(http.StatusInternalServerError, utils.GenericFailure(err))

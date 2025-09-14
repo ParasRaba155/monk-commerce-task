@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	errDoesNotExist = errors.New("no such entity")
+	ErrDoesNotExist = errors.New("no such entity")
 )
 
 // repository is the in memory db
@@ -45,20 +45,20 @@ func (r *repository) GetAllCoupons() ([]Coupon, error) {
 // If the index is not reachable then it will throw the error of does not exist
 func (r *repository) GetCouponByID(id int) (Coupon, error) {
 	if id >= len(r.coupons) {
-		return Coupon{}, fmt.Errorf("%w: no coupon with id %d", errDoesNotExist, id)
+		return Coupon{}, fmt.Errorf("%w: no coupon with id %d", ErrDoesNotExist, id)
 	}
 	if _, isDeleted := r.deleted[id]; isDeleted {
-		return Coupon{}, fmt.Errorf("%w: no coupon with id %d", errDoesNotExist, id)
+		return Coupon{}, fmt.Errorf("%w: no coupon with id %d", ErrDoesNotExist, id)
 	}
 	return r.coupons[id], nil
 }
 
 func (r *repository) UpdateCouponByID(id int, newCoupon Coupon) (Coupon, error) {
 	if id >= len(r.coupons) {
-		return Coupon{}, fmt.Errorf("%w: no coupon with id %d", errDoesNotExist, id)
+		return Coupon{}, fmt.Errorf("%w: no coupon with id %d", ErrDoesNotExist, id)
 	}
 	if _, isDeleted := r.deleted[id]; isDeleted {
-		return Coupon{}, fmt.Errorf("%w: no coupon with id %d", errDoesNotExist, id)
+		return Coupon{}, fmt.Errorf("%w: no coupon with id %d", ErrDoesNotExist, id)
 	}
 	r.coupons[id] = newCoupon
 	return newCoupon, nil
@@ -66,10 +66,10 @@ func (r *repository) UpdateCouponByID(id int, newCoupon Coupon) (Coupon, error) 
 
 func (r *repository) DeleteCouponByID(id int) error {
 	if id >= len(r.coupons) {
-		return fmt.Errorf("%w: no coupon with id %d", errDoesNotExist, id)
+		return fmt.Errorf("%w: no coupon with id %d", ErrDoesNotExist, id)
 	}
 	if _, isDeleted := r.deleted[id]; isDeleted {
-		return fmt.Errorf("%w: no coupon with id %d", errDoesNotExist, id)
+		return fmt.Errorf("%w: no coupon with id %d", ErrDoesNotExist, id)
 	}
 	r.deleted[id] = struct{}{}
 	return nil
