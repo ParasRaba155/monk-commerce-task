@@ -107,6 +107,7 @@ type CouponProduct struct {
 }
 
 type Coupon struct {
+	ID      int
 	Type    CouponType
 	Details CouponDetails
 }
