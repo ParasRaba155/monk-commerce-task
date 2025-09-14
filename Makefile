@@ -6,3 +6,9 @@ build:
 
 start:build
 	./bin/app
+
+test:
+	go test ./...
+
+test-verbose:
+	go test -v ./...
