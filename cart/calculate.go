@@ -2,12 +2,9 @@ package cart
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/ParasRaba155/monk-commerce-task/coupon"
 )
-
-// TODO: remove logs
 
 // GetAppliableCoupons will return the list of all the applicable coupons
 func GetAppliableCoupons(items []PricedItem, coupons []coupon.Coupon) []DiscountCoupon {
@@ -27,9 +24,7 @@ func GetAppliableCoupons(items []PricedItem, coupons []coupon.Coupon) []Discount
 	for couponID, coupon := range coupons {
 		switch coupon.Type {
 		case "cart-wise":
-			slog.Info("cart-wise discount", slog.Int("total_price", totalPrice))
 			if discount, ok := applicableCartWiseCoupons(totalPrice, coupon); ok {
-				slog.Info("cart-wise discount", slog.Int("discount", discount))
 				result = append(result, DiscountCoupon{
 					CouponID: couponID,
 					Type:     coupon.Type,
@@ -37,9 +32,7 @@ func GetAppliableCoupons(items []PricedItem, coupons []coupon.Coupon) []Discount
 				})
 			}
 		case "product-wise":
-			slog.Info("product-wise discount", slog.Int("total_price", totalPrice))
 			if discount, ok := appliableProductWiseCoupon(items, coupon); ok {
-				slog.Info("product-wise discount", slog.Int("discount", discount))
 				result = append(result, DiscountCoupon{
 					CouponID: couponID,
 					Type:     coupon.Type,
@@ -47,9 +40,7 @@ func GetAppliableCoupons(items []PricedItem, coupons []coupon.Coupon) []Discount
 				})
 			}
 		case "bxgy":
-			slog.Info("bxgy-wise discount", slog.Int("total_price", totalPrice))
 			if discount, ok := appliableBxGYCoupon(items, coupon); ok {
-				slog.Info("bxgy discount", slog.Int("discount", discount))
 				result = append(result, DiscountCoupon{
 					CouponID: couponID,
 					Type:     coupon.Type,
@@ -65,7 +56,6 @@ func GetAppliableCoupons(items []PricedItem, coupons []coupon.Coupon) []Discount
 
 func applicableCartWiseCoupons(totalPrice int, coup coupon.Coupon) (int, bool) {
 	detail := coup.Details.(coupon.CartWiseDetails)
-	slog.Info("coupon detail cart wise", slog.Any("coupon", detail))
 	if detail.Threshold > totalPrice {
 		return 0, false
 	}
@@ -74,7 +64,6 @@ func applicableCartWiseCoupons(totalPrice int, coup coupon.Coupon) (int, bool) {
 
 func appliableProductWiseCoupon(items []PricedItem, coup coupon.Coupon) (int, bool) {
 	detail := coup.Details.(coupon.ProductWiseDetails)
-	slog.Info("coupon detail product wise", slog.Any("coupon", detail))
 	for _, item := range items {
 		if item.ProductID == detail.ProductID {
 			return (detail.Discount * item.Price * item.Quantity) / 100, true
@@ -85,7 +74,6 @@ func appliableProductWiseCoupon(items []PricedItem, coup coupon.Coupon) (int, bo
 
 func appliableBxGYCoupon(items []PricedItem, coup coupon.Coupon) (int, bool) {
 	detail := coup.Details.(coupon.BxGyDetails)
-	slog.Info("coupon detail bxgy", slog.Any("coupon", detail))
 
 	cartMap := map[int]PricedItem{} // map of productID -> PricedItem
 	for _, product := range items {
@@ -113,11 +101,14 @@ func appliableBxGYCoupon(items []PricedItem, coup coupon.Coupon) (int, bool) {
 
 	totalDiscount := 0
 	for _, product := range detail.GetProducts {
-		prodcutInCart, ok := cartMap[product.ProductID]
+		productInCart, ok := cartMap[product.ProductID]
 		if !ok {
-			return 0, false
+			continue
 		}
-		totalDiscount += product.Quantity * prodcutInCart.Price * actualRepetitions
+		totalDiscount += product.Quantity * productInCart.Price * actualRepetitions
+	}
+	if totalDiscount == 0 {
+		return 0, false
 	}
 
 	return totalDiscount, true
