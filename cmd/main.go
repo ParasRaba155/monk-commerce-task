@@ -31,6 +31,7 @@ func main() {
 	e.DELETE("/coupons/:id", couponHandler.DeleteByID)
 
 	e.POST("/applicable-coupon", cartHandler.ApplicableCoupon)
+	e.POST("/apply-coupon/:id", cartHandler.ApplyCoupon)
 
 	// Start server
 	if err := e.Start(":8080"); err != nil && !errors.Is(err, http.ErrServerClosed) {
