@@ -40,6 +40,7 @@ NOTE: Run `go mod tidy` if you are going to run it using the 3rd method
 - The way the project tackles different coupon is leveraging Go's interface
 - All coupon implement `CouponDetails` interface
 - Whenever required we retrieve the actual concrete type from it and use it to calculate relevant coupon apply
+- Test cases have been added for the 3 coupon types in [calculate_test.go](./cart/calculate_test.go)
 
 ### Additional Cases
 
@@ -48,8 +49,12 @@ NOTE: Run `go mod tidy` if you are going to run it using the 3rd method
 - We can have the brand wise discount, e.g. 10% off on all the Dell Purchases
 - We can have discount based on quantity, e.g. Buy more than 10 items of clothing then you get 10% off
 - We can have first time customer discount for the customer's 1st visit, this could be any coupon cart wise, or bxgy or product wise
+- There are coupons which offers you future promises instead of direct discount. E.g. on purchase of shopping of above 5000 Rs. you get a free item on your next purchase, or you get a coupon that you can redeem on next purchase.
 
 ### Limitations
 
 - To implement seasonal coupons we will require to have active date and expiration date, current implementation does not tackle it
-- We can roll out a very simple form of product category and brand wise discount, with adding brand and category field in our product list, however it would be very simple implementation as the real world brand wise discounts are more specific then just a flat x% discount.
+- We can roll out a very simple form of product category and brand wise discount, with adding brand and category field in our product list, however it would be very simple implementation, as the real world brand wise discounts are more specific then just a flat x% discount.
+- The Upto Limit was not added in cart wise and product wise for brevity, they could be easily added in the current setup
+- The first time customer discount could not be added since our setup doesn't have information of a customer, we will have to add logic for that for it to work.
+- To implement the future promise coupon would also require customer data along with coupon activate and expire date
